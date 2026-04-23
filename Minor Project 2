@@ -1,0 +1,63 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from sklearn.cluster import KMeans
+from sklearn.linear_model import LogisticRegression
+
+# ----------------------------
+# STEP 1: CREATE DATA
+# ----------------------------
+np.random.seed(0)
+
+data = pd.DataFrame({
+    'Tempo': np.random.randint(60, 180, 50),
+    'Energy': np.random.rand(50),
+    'Loudness': np.random.randint(-60, 0, 50)
+})
+
+# Mood: 1 = Happy, 0 = Sad
+data['Mood'] = ((data['Tempo'] > 120) & (data['Energy'] > 0.5)).astype(int)
+
+# ----------------------------
+# STEP 2: K-MEANS
+# ----------------------------
+kmeans = KMeans(n_clusters=2, n_init=10)
+data['Cluster'] = kmeans.fit_predict(data[['Tempo', 'Energy', 'Loudness']])
+
+# ----------------------------
+# STEP 3: LOGISTIC REGRESSION
+# ----------------------------
+X = data[['Tempo', 'Energy', 'Loudness']]
+y = data['Mood']
+
+model = LogisticRegression()
+model.fit(X, y)
+
+# ----------------------------
+# STEP 5: USER INPUT (WORKING)
+# ----------------------------
+try:
+    tempo = float(input("Enter Tempo (60-180): "))
+    energy = float(input("Enter Energy (0-1): "))
+    loudness = float(input("Enter Loudness (-60 to 0): "))
+
+    sample = [[tempo, energy, loudness]]
+    prediction = model.predict(sample)
+
+    if prediction[0] == 1:
+        print("🎉 Happy Mood Song")
+    else:
+        print("😢 Sad Mood Song")
+
+except:
+    print("⚠️ Invalid input! Please enter numeric values.")
+
+plt.figure(figsize=(4, 3))  # smaller graph
+
+plt.scatter(data['Tempo'], data['Energy'], c=data['Cluster'])
+plt.xlabel("Tempo")
+plt.ylabel("Energy")
+plt.title("Clusters")
+
+plt.show()
