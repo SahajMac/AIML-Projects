@@ -1,0 +1,43 @@
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+
+# Sample synthetic dataset
+data = pd.DataFrame({
+    'Latitude': np.random.uniform(28.5, 28.8, 300),
+    'Longitude': np.random.uniform(77.0, 77.3, 300),
+    'Time': np.random.randint(0, 24, 300),
+    'Crime_Type': np.random.randint(0, 5, 300),
+    'Crime_Occurred': np.random.randint(0, 2, 300)
+})
+
+# Features
+X = data[['Latitude', 'Longitude', 'Time', 'Crime_Type']]
+y = data['Crime_Occurred']
+
+# Scaling
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# PCA
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X_scaled)
+
+# Clustering
+kmeans = KMeans(n_clusters=4)
+clusters = kmeans.fit_predict(X_pca)
+
+data['Cluster'] = clusters
+
+# Prediction
+X_final = data[['Latitude', 'Longitude', 'Time', 'Crime_Type', 'Cluster']]
+X_train, X_test, y_train, y_test = train_test_split(X_final, y, test_size=0.2)
+
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+print("Model trained successfully")
