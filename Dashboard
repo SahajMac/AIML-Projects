@@ -1,0 +1,102 @@
+# Install
+!pip install -q plotly scikit-learn
+
+import pandas as pd
+import plotly.express as px
+import numpy as np
+from sklearn.linear_model import LinearRegression
+
+# -----------------------------
+# DATA
+# -----------------------------
+states = ["All", "Uttar Pradesh", "Maharashtra", "Bihar", "West Bengal", "Madhya Pradesh",
+          "Tamil Nadu", "Rajasthan", "Karnataka", "Gujarat", "Andhra Pradesh"]
+
+years = np.arange(2010, 2024)
+
+data_list = []
+
+for state in states[1:]:
+    base_pop = np.random.uniform(50, 200)
+    for year in years:
+        population = base_pop + (year-2010)*np.random.uniform(1, 3)
+        birth_rate = np.random.uniform(15, 25)
+        death_rate = np.random.uniform(5, 10)
+        data_list.append([state, year, population, birth_rate, death_rate])
+
+df = pd.DataFrame(data_list, columns=[
+    "State", "Year", "Population (Millions)", "Birth Rate", "Death Rate"
+])
+
+# -----------------------------
+# SELECT STATE HERE 👇
+# -----------------------------
+selected_state = "All"   # Change this to any state name
+
+# -----------------------------
+# FILTER
+# -----------------------------
+if selected_state == "All":
+    filtered = df
+else:
+    filtered = df[df["State"] == selected_state]
+
+print(f"📊 Showing Data for: {selected_state}")
+display(filtered.head())
+
+# -----------------------------
+# LINE GRAPH
+# -----------------------------
+fig1 = px.line(filtered, x="Year", y="Population (Millions)",
+               color="State", title="Population Trend")
+fig1.show()
+
+# -----------------------------
+# BAR GRAPH
+# -----------------------------
+latest = df[df["Year"] == df["Year"].max()]
+
+fig2 = px.bar(latest, x="State", y="Population (Millions)",
+              title="Population by State (Latest Year)")
+fig2.show()
+
+# -----------------------------
+# PIE CHART
+# -----------------------------
+fig3 = px.pie(latest, names="State", values="Population (Millions)",
+              title="Population Distribution")
+fig3.show()
+
+# -----------------------------
+# SCATTER
+# -----------------------------
+fig4 = px.scatter(filtered, x="Birth Rate", y="Death Rate",
+                  size="Population (Millions)", color="State",
+                  title="Birth vs Death vs Population")
+fig4.show()
+
+# -----------------------------
+# ML PREDICTION (ONLY FOR ONE STATE)
+# -----------------------------
+if selected_state != "All":
+    state_data = filtered
+
+    X = state_data[["Year"]]
+    y = state_data["Population (Millions)"]
+
+    model = LinearRegression()
+    model.fit(X, y)
+
+    future_years = np.arange(2024, 2030).reshape(-1,1)
+    pred = model.predict(future_years)
+
+    future_df = pd.DataFrame({
+        "Year": future_years.flatten(),
+        "Predicted Population": pred
+    })
+
+    fig5 = px.line(state_data, x="Year", y="Population (Millions)",
+                   title=f"Population Prediction ({selected_state})")
+    fig5.add_scatter(x=future_df["Year"], y=future_df["Predicted Population"],
+                     mode='lines', name='Prediction')
+    fig5.show()
